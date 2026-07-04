@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 import { RegisterForm } from '../classes/register-form';
+import { Auth } from '../services/auth';
 import { UsersService } from '../services/users';
 
 @Component({
@@ -25,6 +26,7 @@ import { UsersService } from '../services/users';
 export class Register {
   private readonly router = inject(Router);
   private readonly usersService = inject(UsersService);
+  private readonly auth = inject(Auth);
 
   @ViewChild(MatTooltip) private usernameTooltip?: MatTooltip;
 
@@ -59,6 +61,7 @@ export class Register {
       return;
     }
     this.usersService.registerUser(this.form.username, this.form.email, this.form.password);
-    this.router.navigateByUrl('/login');
+    this.auth.login(this.form.username);
+    this.router.navigateByUrl('/');
   }
 }
