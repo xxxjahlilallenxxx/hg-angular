@@ -1,0 +1,191 @@
+<section class="profile">
+  <app-dashboard />
+  <h1>Profile</h1>
+
+  <mat-sidenav-container class="profile-container">
+    <mat-sidenav mode="side" opened>
+      <mat-nav-list>
+        <a
+          mat-list-item
+          [class.active]="selectedSection() === 'password'"
+          (click)="selectedSection.set('password')"
+        >
+          Change Password
+        </a>
+        <a
+          mat-list-item
+          [class.active]="selectedSection() === 'settings'"
+          (click)="selectedSection.set('settings')"
+        >
+          Settings
+        </a>
+        <a
+          mat-list-item
+          [class.active]="selectedSection() === 'delete'"
+          (click)="selectedSection.set('delete')"
+        >
+          Delete Account
+        </a>
+        <a
+          mat-list-item
+          [class.active]="selectedSection() === 'add-server'"
+          (click)="selectedSection.set('add-server')"
+        >
+          Add a Server
+        </a>
+        <a
+          mat-list-item
+          [class.active]="selectedSection() === 'update-server'"
+          (click)="selectedSection.set('update-server')"
+        >
+          Update a Server
+        </a>
+        <a
+          mat-list-item
+          [class.active]="selectedSection() === 'delete-server'"
+          (click)="selectedSection.set('delete-server')"
+        >
+          Delete a Server
+        </a>
+      </mat-nav-list>
+    </mat-sidenav>
+
+    <mat-sidenav-content class="profile-content">
+      @switch (selectedSection()) {
+        @case ('password') {
+          <h2>Change Password</h2>
+          <form (ngSubmit)="changePassword()">
+            <mat-form-field appearance="outline">
+              <mat-label>New Password</mat-label>
+              <input
+                matInput
+                type="password"
+                name="newPassword"
+                [(ngModel)]="passwordForm.newPassword"
+                required
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Confirm Password</mat-label>
+              <input
+                matInput
+                type="password"
+                name="confirmPassword"
+                [(ngModel)]="passwordForm.confirmPassword"
+                required
+              />
+            </mat-form-field>
+
+            <button mat-flat-button type="submit">Change Password</button>
+          </form>
+        }
+        @case ('settings') {
+          <h2>Settings</h2>
+          <mat-slide-toggle [(ngModel)]="settingsForm.emailNotifications">
+            Email notifications
+          </mat-slide-toggle>
+        }
+        @case ('delete') {
+          <h2>Delete Account</h2>
+          <button mat-flat-button color="warn" (click)="deleteAccount()">Delete Account</button>
+        }
+        @case ('add-server') {
+          <app-create-server />
+        }
+        @case ('update-server') {
+          <h2>Update a Server</h2>
+          <form (ngSubmit)="updateServer()">
+            <mat-form-field appearance="outline">
+              <mat-label>Server</mat-label>
+              <mat-select
+                name="selectedServerToUpdate"
+                [(ngModel)]="selectedServerToUpdate"
+                (selectionChange)="onServerToUpdateChange($event.value)"
+              >
+                @for (server of serverNames(); track server) {
+                  <mat-option [value]="server">{{ server }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>IP Address</mat-label>
+              <input matInput name="updateIpAddress" [(ngModel)]="updateServerForm.ipAddress" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Cfx.re Information</mat-label>
+              <input
+                matInput
+                name="updateCfxInformation"
+                placeholder="cfx.re/join/xxxxxx"
+                [(ngModel)]="updateServerForm.cfxInformation"
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>FiveM Mods</mat-label>
+              <mat-chip-grid #updateModChipGrid aria-label="FiveM mods">
+                @for (mod of updateServerForm.mods; track mod) {
+                  <mat-chip-row (removed)="removeUpdateMod(mod)">
+                    {{ mod }}
+                    <button matChipRemove aria-label="Remove mod">
+                      <mat-icon>cancel</mat-icon>
+                    </button>
+                  </mat-chip-row>
+                }
+                <input
+                  placeholder="Add a mod and press Enter..."
+                  [matChipInputFor]="updateModChipGrid"
+                  (matChipInputTokenEnd)="addUpdateMod($event)"
+                />
+              </mat-chip-grid>
+            </mat-form-field>
+
+            <div class="capacity-field">
+              <label id="update-capacity-label">Max Users: {{ updateServerForm.capacity }}</label>
+              <mat-slider
+                [min]="minCapacity"
+                [max]="maxCapacity"
+                step="1"
+                discrete
+                aria-labelledby="update-capacity-label"
+              >
+                <input matSliderThumb name="updateCapacity" [(ngModel)]="updateServerForm.capacity" />
+              </mat-slider>
+            </div>
+
+            <button mat-flat-button type="submit" [disabled]="!selectedServerToUpdate">
+              Update Server
+            </button>
+          </form>
+        }
+        @case ('delete-server') {
+          <h2>Delete a Server</h2>
+          <mat-form-field appearance="outline">
+            <mat-label>Server</mat-label>
+            <mat-select name="selectedServerToDelete" [(ngModel)]="selectedServerToDelete">
+              @for (server of deletableServerNames(); track server) {
+                <mat-option [value]="server">{{ server }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          @if (deletableServerNames().length === 0) {
+            <p>You haven't created any servers to delete.</p>
+          }
+          <div>
+            <button
+              mat-flat-button
+              color="warn"
+              [disabled]="!selectedServerToDelete"
+              (click)="deleteServer()"
+            >
+              Delete Server
+            </button>
+          </div>
+        }
+      }
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</section>

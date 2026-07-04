@@ -1,0 +1,36 @@
+<section class="dashboard">
+  @if (!isHome()) {
+    <button mat-icon-button routerLink="/" aria-label="Go home">
+      <mat-icon>home</mat-icon>
+    </button>
+  }
+  @if (auth.isLoggedIn()) {
+    <button
+      mat-icon-button
+      routerLink="/profile"
+      aria-label="Go to profile"
+      [matTooltip]="auth.username()"
+    >
+      <mat-icon>account_circle</mat-icon>
+    </button>
+  }
+  <button mat-icon-button [matMenuTriggerFor]="dashboardMenu" aria-label="Open menu">
+    <mat-icon>menu</mat-icon>
+  </button>
+  <button mat-icon-button routerLink="/servers" aria-label="Go to servers">
+    <mat-icon>dns</mat-icon>
+  </button>
+  <mat-menu #dashboardMenu="matMenu">
+    @if (auth.isLoggedIn()) {
+      <button mat-menu-item (click)="auth.logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Logout</span>
+      </button>
+    } @else {
+      <a mat-menu-item routerLink="/login">
+        <mat-icon>login</mat-icon>
+        <span>Login</span>
+      </a>
+    }
+  </mat-menu>
+</section>

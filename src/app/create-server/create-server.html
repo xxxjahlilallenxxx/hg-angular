@@ -1,0 +1,71 @@
+<section class="create-server">
+  <h1>Create a Server</h1>
+
+  <form #createServerForm="ngForm" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="outline">
+      <mat-label>Server Name</mat-label>
+      <input
+        matInput
+        name="serverName"
+        #serverNameModel="ngModel"
+        [(ngModel)]="form.serverName"
+        required
+      />
+      @if (serverNameModel.invalid && serverNameModel.touched) {
+        <mat-error>Server name cannot be blank</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>IP Address</mat-label>
+      <input matInput name="ipAddress" [(ngModel)]="form.ipAddress" required />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Cfx.re Information</mat-label>
+      <input
+        matInput
+        name="cfxInformation"
+        placeholder="cfx.re/join/xxxxxx"
+        [(ngModel)]="form.cfxInformation"
+        required
+      />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>FiveM Mods</mat-label>
+      <mat-chip-grid #modChipGrid aria-label="FiveM mods">
+        @for (mod of form.mods; track mod) {
+          <mat-chip-row (removed)="removeMod(mod)">
+            {{ mod }}
+            <button matChipRemove aria-label="Remove mod">
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip-row>
+        }
+        <input
+          placeholder="Add a mod and press Enter..."
+          [matChipInputFor]="modChipGrid"
+          (matChipInputTokenEnd)="addMod($event)"
+        />
+      </mat-chip-grid>
+    </mat-form-field>
+
+    <div class="capacity-field">
+      <label id="capacity-label">Max Users: {{ form.capacity }}</label>
+      <mat-slider
+        [min]="minCapacity"
+        [max]="maxCapacity"
+        step="1"
+        discrete
+        aria-labelledby="capacity-label"
+      >
+        <input matSliderThumb name="capacity" [(ngModel)]="form.capacity" />
+      </mat-slider>
+    </div>
+
+    <button mat-flat-button type="submit" [disabled]="createServerForm.invalid">
+      Create Server
+    </button>
+  </form>
+</section>

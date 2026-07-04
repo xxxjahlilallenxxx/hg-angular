@@ -1,0 +1,123 @@
+<section class="home">
+  <app-dashboard />
+
+  <header class="home-header">
+    <h1>Hirogi Games</h1>
+  </header>
+
+  <div class="home-grid">
+    <mat-card class="home-card">
+      <mat-card-header>
+        <mat-card-title>FiveM RP Servers</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <ul>
+          @for (server of servers(); track server.name) {
+            <li>
+              <span class="item-name">{{ server.name }}</span>
+              <span class="item-meta">
+                {{ server.active ? 'Online' : 'Offline' }} · {{ server.memberCount }}/{{
+                  server.capacity
+                }}
+              </span>
+            </li>
+          }
+        </ul>
+        <div class="server-actions">
+          <button mat-flat-button routerLink="/create-server">
+            <mat-icon>add</mat-icon>
+            Create a Server
+          </button>
+          <button mat-stroked-button routerLink="/servers">
+            <mat-icon>table_rows</mat-icon>
+            View All Servers
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="home-card">
+      <mat-card-header>
+        <mat-card-title>Discord Communities</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <ul>
+          @for (community of discordCommunities; track community.name) {
+            <li>
+              <a [href]="community.link" target="_blank" rel="noopener">
+                <mat-icon>groups</mat-icon>
+                <span class="item-name">{{ community.name }}</span>
+              </a>
+            </li>
+          }
+        </ul>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="home-card">
+      <mat-card-header>
+        <mat-card-title>GitHub Links</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <ul>
+          @for (repo of githubLinks; track repo.name) {
+            <li>
+              <a [href]="repo.link" target="_blank" rel="noopener">
+                <mat-icon>code</mat-icon>
+                <span class="item-name">{{ repo.name }}</span>
+              </a>
+            </li>
+          }
+        </ul>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="home-card">
+      <mat-card-header>
+        <mat-card-title>Downloads</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <ul>
+          @for (download of downloads; track download.name) {
+            <li>
+              <a [href]="download.link" target="_blank" rel="noopener">
+                <mat-icon>download</mat-icon>
+                <span class="item-name">{{ download.name }}</span>
+              </a>
+            </li>
+          }
+        </ul>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <footer class="home-footer">
+    <a
+      mat-stroked-button
+      href="https://docs.fivem.net/"
+      target="_blank"
+      rel="noopener"
+    >
+      <mat-icon>menu_book</mat-icon>
+      FiveM Wiki
+    </a>
+    <a
+      mat-stroked-button
+      href="https://runtime.fivem.net/artifacts/fivem/build_server_windows/"
+      target="_blank"
+      rel="noopener"
+    >
+      <mat-icon>download</mat-icon>
+      FiveM Artifacts
+    </a>
+    <a
+      mat-stroked-button
+      href="https://forum.cfx.re/c/development/resources/26"
+      target="_blank"
+      rel="noopener"
+    >
+      <mat-icon>extension</mat-icon>
+      FiveM Mods
+    </a>
+  </footer>
+</section>
