@@ -5,6 +5,15 @@ export interface Server {
   capacity: number;
   active: boolean;
   owner: string;
-  // One-to-one with the server; only ever populated/shown for the owner.
+  // One-to-one with the server; the backend only populates this for the
+  // requesting user's own servers, null otherwise.
+  cfxRegistrationKey: string | null;
+}
+
+export interface CreateServerPayload {
+  name: string;
+  ipAddress: string;
+  capacity: number;
+  owner: string;
   cfxRegistrationKey: string;
 }

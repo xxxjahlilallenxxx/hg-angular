@@ -1,50 +1,51 @@
-import { Injectable, signal } from '@angular/core';
-import { Server } from '../classes/interfaces/server';
+import { Injectable, effect, inject, signal } from '@angular/core';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { CreateServerPayload, Server } from '../classes/interfaces/server';
+import { Auth } from './auth';
+import { ServersApi } from './servers-api';
 
 @Injectable({ providedIn: 'root' })
 export class ServersService {
-  private readonly serverList = signal<Server[]>([
-    {
-      name: 'Los Santos Roleplay',
-      ipAddress: '192.168.1.10:30120',
-      memberCount: 124,
-      capacity: 200,
-      active: true,
-      owner: 'system',
-      cfxRegistrationKey: 'cfx.re/join/lsrp001',
-    },
-    {
-      name: 'Vinewood Chronicles RP',
-      ipAddress: '192.168.1.11:30120',
-      memberCount: 87,
-      capacity: 150,
-      active: true,
-      owner: 'system',
-      cfxRegistrationKey: 'cfx.re/join/vcrp002',
-    },
-    {
-      name: 'Sandy Shores Underground',
-      ipAddress: '192.168.1.12:30120',
-      memberCount: 0,
-      capacity: 100,
-      active: false,
-      owner: 'system',
-      cfxRegistrationKey: 'cfx.re/join/ssu003',
-    },
-  ]);
+  private readonly serversApi = inject(ServersApi);
+  private readonly auth = inject(Auth);
+
+  private readonly serverList = signal<Server[]>([]);
   readonly servers = this.serverList.asReadonly();
 
-  addServer(server: Server): void {
-    this.serverList.update((servers) => [...servers, server]);
+  constructor() {
+    // Refetch whenever the logged-in user changes, so the requester's own
+    // cfx registration keys are (re)populated as soon as they log in.
+    effect(() => {
+      const requester = this.auth.username() || undefined;
+      this.serversApi.getServers(requester).subscribe({
+        next: (servers) => this.serverList.set(servers),
+        error: (err) => console.error('Failed to load servers', err),
+      });
+    });
   }
 
-  updateServer(name: string, changes: Partial<Server>): void {
-    this.serverList.update((servers) =>
-      servers.map((server) => (server.name === name ? { ...server, ...changes } : server)),
-    );
+  private refresh(): void {
+    const requester = this.auth.username() || undefined;
+    this.serversApi.getServers(requester).subscribe({
+      next: (servers) => this.serverList.set(servers),
+      error: (err) => console.error('Failed to load servers', err),
+    });
   }
 
-  removeServer(name: string): void {
-    this.serverList.update((servers) => servers.filter((server) => server.name !== name));
+  addServer(server: CreateServerPayload): Observable<Server> {
+    return this.serversApi.createServer(server).pipe(tap(() => this.refresh()));
+  }
+
+  updateServer(name: string, changes: Partial<Server>): Observable<Server> {
+    return this.serversApi
+      .updateServer(name, changes, this.auth.username())
+      .pipe(tap(() => this.refresh()));
+  }
+
+  removeServer(name: string): Observable<void> {
+    return this.serversApi
+      .deleteServer(name, this.auth.username())
+      .pipe(tap(() => this.refresh()));
   }
 }

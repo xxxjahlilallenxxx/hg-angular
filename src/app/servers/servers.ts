@@ -29,6 +29,8 @@ export class Servers {
     if (!confirmed) {
       return;
     }
-    this.serversService.removeServer(name);
+    this.serversService.removeServer(name).subscribe({
+      error: (err) => console.error('Failed to delete server', err),
+    });
   }
 }

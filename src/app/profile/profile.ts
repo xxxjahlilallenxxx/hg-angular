@@ -74,6 +74,9 @@ export class Profile {
 
   selectedServerToDelete = '';
 
+  readonly updateServerError = signal<string | null>(null);
+  readonly deleteServerError = signal<string | null>(null);
+
   changePassword(): void {
     if (
       !this.passwordForm.newPassword ||
@@ -115,7 +118,7 @@ export class Profile {
     if (server) {
       this.updateServerForm.capacity = server.capacity;
       this.updateServerForm.ipAddress = server.ipAddress;
-      this.updateServerForm.cfxRegistrationKey = server.cfxRegistrationKey;
+      this.updateServerForm.cfxRegistrationKey = server.cfxRegistrationKey ?? '';
     }
   }
 
@@ -123,11 +126,17 @@ export class Profile {
     if (!this.selectedServerToUpdate || !this.ownedServerNames().includes(this.selectedServerToUpdate)) {
       return;
     }
-    this.serversService.updateServer(this.selectedServerToUpdate, {
-      ipAddress: this.updateServerForm.ipAddress,
-      capacity: this.updateServerForm.capacity,
-      cfxRegistrationKey: this.updateServerForm.cfxRegistrationKey,
-    });
+    this.updateServerError.set(null);
+    this.serversService
+      .updateServer(this.selectedServerToUpdate, {
+        ipAddress: this.updateServerForm.ipAddress,
+        capacity: this.updateServerForm.capacity,
+        cfxRegistrationKey: this.updateServerForm.cfxRegistrationKey,
+      })
+      .subscribe({
+        error: (err) =>
+          this.updateServerError.set(err?.error?.message ?? 'Failed to update server.'),
+      });
   }
 
   deleteServer(): void {
@@ -140,7 +149,13 @@ export class Profile {
     if (!confirmed) {
       return;
     }
-    this.serversService.removeServer(this.selectedServerToDelete);
-    this.selectedServerToDelete = '';
+    this.deleteServerError.set(null);
+    this.serversService.removeServer(this.selectedServerToDelete).subscribe({
+      next: () => {
+        this.selectedServerToDelete = '';
+      },
+      error: (err) =>
+        this.deleteServerError.set(err?.error?.message ?? 'Failed to delete server.'),
+    });
   }
 }

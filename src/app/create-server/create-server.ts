@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -35,6 +35,9 @@ export class CreateServer {
 
   form = new CreateServerForm();
 
+  readonly formError = signal<string | null>(null);
+  readonly submitting = signal(false);
+
   addMod(event: MatChipInputEvent): void {
     const mod = event.value.trim();
     if (mod) {
@@ -51,15 +54,26 @@ export class CreateServer {
     if (!this.form.serverName.trim()) {
       return;
     }
-    this.serversService.addServer({
-      name: this.form.serverName,
-      ipAddress: this.form.ipAddress,
-      memberCount: 0,
-      capacity: this.form.capacity,
-      active: true,
-      owner: this.auth.username(),
-      cfxRegistrationKey: this.form.cfxRegistrationKey,
-    });
-    this.router.navigateByUrl('/');
+
+    this.formError.set(null);
+    this.submitting.set(true);
+    this.serversService
+      .addServer({
+        name: this.form.serverName,
+        ipAddress: this.form.ipAddress,
+        capacity: this.form.capacity,
+        owner: this.auth.username(),
+        cfxRegistrationKey: this.form.cfxRegistrationKey,
+      })
+      .subscribe({
+        next: () => {
+          this.submitting.set(false);
+          this.router.navigateByUrl('/');
+        },
+        error: (err) => {
+          this.submitting.set(false);
+          this.formError.set(err?.error?.message ?? 'Failed to create server. Please try again.');
+        },
+      });
   }
 }

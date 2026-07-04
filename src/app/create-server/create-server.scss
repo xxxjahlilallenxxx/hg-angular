@@ -14,4 +14,9 @@
       width: 100%;
     }
   }
+
+  .form-error {
+    color: var(--mat-sys-error, #b3261e);
+    font-size: 0.85rem;
+  }
 }

@@ -64,7 +64,11 @@
       </mat-slider>
     </div>
 
-    <button mat-flat-button type="submit" [disabled]="createServerForm.invalid">
+    @if (formError()) {
+      <mat-error class="form-error">{{ formError() }}</mat-error>
+    }
+
+    <button mat-flat-button type="submit" [disabled]="createServerForm.invalid || submitting()">
       Create Server
     </button>
   </form>
