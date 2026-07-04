@@ -57,11 +57,9 @@ export class Profile {
   readonly minCapacity = 4;
   readonly maxCapacity = 1000;
 
-  protected readonly serverNames = computed(() =>
-    this.serversService.servers().map((server) => server.name),
-  );
-
-  protected readonly deletableServerNames = computed(() =>
+  // Only the owner can update or delete their own server (and, in turn, ever
+  // see its cfx registration key), so both sections share this same list.
+  protected readonly ownedServerNames = computed(() =>
     this.serversService
       .servers()
       .filter((server) => server.owner === this.auth.username())
@@ -116,20 +114,24 @@ export class Profile {
     this.updateServerForm.serverName = name;
     if (server) {
       this.updateServerForm.capacity = server.capacity;
+      this.updateServerForm.ipAddress = server.ipAddress;
+      this.updateServerForm.cfxRegistrationKey = server.cfxRegistrationKey;
     }
   }
 
   updateServer(): void {
-    if (!this.selectedServerToUpdate) {
+    if (!this.selectedServerToUpdate || !this.ownedServerNames().includes(this.selectedServerToUpdate)) {
       return;
     }
     this.serversService.updateServer(this.selectedServerToUpdate, {
+      ipAddress: this.updateServerForm.ipAddress,
       capacity: this.updateServerForm.capacity,
+      cfxRegistrationKey: this.updateServerForm.cfxRegistrationKey,
     });
   }
 
   deleteServer(): void {
-    if (!this.selectedServerToDelete || !this.deletableServerNames().includes(this.selectedServerToDelete)) {
+    if (!this.selectedServerToDelete || !this.ownedServerNames().includes(this.selectedServerToDelete)) {
       return;
     }
     const confirmed = window.confirm(

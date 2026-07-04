@@ -103,11 +103,14 @@
                 [(ngModel)]="selectedServerToUpdate"
                 (selectionChange)="onServerToUpdateChange($event.value)"
               >
-                @for (server of serverNames(); track server) {
+                @for (server of ownedServerNames(); track server) {
                   <mat-option [value]="server">{{ server }}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
+            @if (ownedServerNames().length === 0) {
+              <p>You haven't created any servers to update.</p>
+            }
 
             <mat-form-field appearance="outline">
               <mat-label>IP Address</mat-label>
@@ -115,12 +118,12 @@
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>Cfx.re Information</mat-label>
+              <mat-label>CFX Registration Key</mat-label>
               <input
                 matInput
-                name="updateCfxInformation"
+                name="updateCfxRegistrationKey"
                 placeholder="cfx.re/join/xxxxxx"
-                [(ngModel)]="updateServerForm.cfxInformation"
+                [(ngModel)]="updateServerForm.cfxRegistrationKey"
               />
             </mat-form-field>
 
@@ -166,12 +169,12 @@
           <mat-form-field appearance="outline">
             <mat-label>Server</mat-label>
             <mat-select name="selectedServerToDelete" [(ngModel)]="selectedServerToDelete">
-              @for (server of deletableServerNames(); track server) {
+              @for (server of ownedServerNames(); track server) {
                 <mat-option [value]="server">{{ server }}</mat-option>
               }
             </mat-select>
           </mat-form-field>
-          @if (deletableServerNames().length === 0) {
+          @if (ownedServerNames().length === 0) {
             <p>You haven't created any servers to delete.</p>
           }
           <div>

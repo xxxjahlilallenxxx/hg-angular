@@ -1,7 +1,7 @@
 export class CreateServerForm {
   serverName = '';
   ipAddress = '';
-  cfxInformation = '';
+  cfxRegistrationKey = '';
   mods: string[] = [];
   capacity = 4;
 }

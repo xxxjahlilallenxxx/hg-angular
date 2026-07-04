@@ -11,6 +11,7 @@ export class ServersService {
       capacity: 200,
       active: true,
       owner: 'system',
+      cfxRegistrationKey: 'cfx.re/join/lsrp001',
     },
     {
       name: 'Vinewood Chronicles RP',
@@ -19,6 +20,7 @@ export class ServersService {
       capacity: 150,
       active: true,
       owner: 'system',
+      cfxRegistrationKey: 'cfx.re/join/vcrp002',
     },
     {
       name: 'Sandy Shores Underground',
@@ -27,6 +29,7 @@ export class ServersService {
       capacity: 100,
       active: false,
       owner: 'system',
+      cfxRegistrationKey: 'cfx.re/join/ssu003',
     },
   ]);
   readonly servers = this.serverList.asReadonly();

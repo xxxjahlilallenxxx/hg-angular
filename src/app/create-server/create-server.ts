@@ -58,6 +58,7 @@ export class CreateServer {
       capacity: this.form.capacity,
       active: true,
       owner: this.auth.username(),
+      cfxRegistrationKey: this.form.cfxRegistrationKey,
     });
     this.router.navigateByUrl('/');
   }
