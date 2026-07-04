@@ -24,7 +24,9 @@
       }
     </mat-form-field>
 
-    <button mat-flat-button type="submit" [disabled]="loginForm.invalid">Log In</button>
+    <button mat-flat-button type="submit" [disabled]="loginForm.invalid || submitting()">
+      Log In
+    </button>
     <button mat-stroked-button type="button" routerLink="/register">
       Don't have an account? Register
     </button>

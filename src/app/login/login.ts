@@ -6,7 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 import { Auth } from '../services/auth';
-import { UsersService } from '../services/users';
+import { UsersApi } from '../services/users-api';
 import { LoginForm } from '../classes/login-form';
 
 const MAX_FAILED_ATTEMPTS = 3;
@@ -27,44 +27,47 @@ const MAX_FAILED_ATTEMPTS = 3;
 export class Login {
   private readonly auth = inject(Auth);
   private readonly router = inject(Router);
-  private readonly usersService = inject(UsersService);
+  private readonly usersApi = inject(UsersApi);
 
   @ViewChild(MatTooltip) private passwordTooltip?: MatTooltip;
 
   form = new LoginForm();
-
   private failedAttempts = 0;
 
   readonly loginError = signal<string | null>(null);
   readonly passwordTooltipMessage = computed(() => this.loginError() ?? 'Enter your password');
   readonly passwordTooltipClass = computed(() => (this.loginError() ? 'tooltip-error' : ''));
+  readonly submitting = signal(false);
 
   onSubmit(): void {
-    if (!this.form.username.trim() || !this.form.password) {
-      return;
-    }
+    if (!this.form.username.trim() || !this.form.password) return;
 
-    if (!this.usersService.validateCredentials(this.form.username, this.form.password)) {
-      this.failedAttempts++;
-      this.loginError.set('Incorrect username or password');
-      this.passwordTooltip?.show();
-
-      if (this.failedAttempts >= MAX_FAILED_ATTEMPTS) {
+    this.submitting.set(true);
+    this.usersApi.login(this.form.username, this.form.password).subscribe({
+      next: (user) => {
+        this.submitting.set(false);
         this.failedAttempts = 0;
-        const wantsReset = window.confirm(
-          'You have had 3 failed login attempts. Would you like to submit a forgot password form?',
-        );
-        if (wantsReset) {
-          this.router.navigateByUrl('/forgot-password');
-        }
-      }
-      return;
-    }
+        this.loginError.set(null);
+        this.passwordTooltip?.hide();
+        this.auth.login(user.username);
+        this.router.navigateByUrl('/');
+      },
+      error: (err) => {
+        this.submitting.set(false);
+        this.failedAttempts++;
+        this.loginError.set(err?.error?.message ?? 'Incorrect username or password');
+        this.passwordTooltip?.show();
 
-    this.failedAttempts = 0;
-    this.loginError.set(null);
-    this.passwordTooltip?.hide();
-    this.auth.login(this.form.username);
-    this.router.navigateByUrl('/');
+        if (this.failedAttempts >= MAX_FAILED_ATTEMPTS) {
+          this.failedAttempts = 0;
+          const wantsReset = window.confirm(
+            'You have had 3 failed login attempts. Would you like to submit a forgot password form?',
+          );
+          if (wantsReset) {
+            this.router.navigateByUrl('/forgot-password');
+          }
+        }
+      },
+    });
   }
 }

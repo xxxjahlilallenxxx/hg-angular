@@ -1,15 +1,27 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Login } from './login';
 import { Auth } from '../services/auth';
-import { UsersService } from '../services/users';
+
+const LOGIN_URL =
+  'https://hg-users.jollyplant-dd787027.centralus.azurecontainerapps.io/api/users/login';
 
 describe('Login', () => {
+  let httpMock: HttpTestingController;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Login],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
+
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpMock.verify();
   });
 
   it('should create', () => {
@@ -21,15 +33,16 @@ describe('Login', () => {
     const fixture = TestBed.createComponent(Login);
     const login = fixture.componentInstance;
     const auth = TestBed.inject(Auth);
-    const usersService = TestBed.inject(UsersService);
     const router = TestBed.inject(Router);
     const navigateSpy = spyOn(router, 'navigateByUrl');
-
-    usersService.registerUser('player1', 'player@hirogi.games', 'secret');
 
     login.form.username = 'player1';
     login.form.password = 'secret';
     login.onSubmit();
+
+    httpMock
+      .expectOne(LOGIN_URL)
+      .flush({ id: 'abc-123', username: 'player1', email: 'player@hirogi.games' });
 
     expect(auth.isLoggedIn()).toBeTrue();
     expect(auth.username()).toBe('player1');
@@ -40,15 +53,19 @@ describe('Login', () => {
     const fixture = TestBed.createComponent(Login);
     const login = fixture.componentInstance;
     const auth = TestBed.inject(Auth);
-    const usersService = TestBed.inject(UsersService);
     const router = TestBed.inject(Router);
     const navigateSpy = spyOn(router, 'navigateByUrl');
-
-    usersService.registerUser('player1', 'player@hirogi.games', 'secret');
 
     login.form.username = 'player1';
     login.form.password = 'wrong-password';
     login.onSubmit();
+
+    httpMock
+      .expectOne(LOGIN_URL)
+      .flush(
+        { message: 'Incorrect username or password' },
+        { status: 401, statusText: 'Unauthorized' },
+      );
 
     expect(auth.isLoggedIn()).toBeFalse();
     expect(login.loginError()).toBe('Incorrect username or password');
@@ -58,18 +75,22 @@ describe('Login', () => {
   it('should prompt for a forgot password form after 3 failed attempts', () => {
     const fixture = TestBed.createComponent(Login);
     const login = fixture.componentInstance;
-    const usersService = TestBed.inject(UsersService);
     const router = TestBed.inject(Router);
     const navigateSpy = spyOn(router, 'navigateByUrl');
     const confirmSpy = spyOn(window, 'confirm').and.returnValue(true);
 
-    usersService.registerUser('player1', 'player@hirogi.games', 'secret');
-
     login.form.username = 'player1';
     login.form.password = 'wrong-password';
-    login.onSubmit();
-    login.onSubmit();
-    login.onSubmit();
+
+    for (let i = 0; i < 3; i++) {
+      login.onSubmit();
+      httpMock
+        .expectOne(LOGIN_URL)
+        .flush(
+          { message: 'Incorrect username or password' },
+          { status: 401, statusText: 'Unauthorized' },
+        );
+    }
 
     expect(confirmSpy).toHaveBeenCalledTimes(1);
     expect(navigateSpy).toHaveBeenCalledWith('/forgot-password');

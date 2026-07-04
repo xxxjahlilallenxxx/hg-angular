@@ -44,7 +44,15 @@
           />
         </mat-form-field>
 
-        <button mat-flat-button type="submit" [disabled]="registerForm.invalid || !!usernameError()">
+        @if (formError()) {
+          <mat-error class="form-error">{{ formError() }}</mat-error>
+        }
+
+        <button
+          mat-flat-button
+          type="submit"
+          [disabled]="registerForm.invalid || !!usernameError() || submitting()"
+        >
           Register
         </button>
       </form>
